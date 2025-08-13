@@ -32,6 +32,7 @@ def main():
     parser.add_argument("--target_format", "-f", choices=["3dgs", "cc"], required=True, help="Target point cloud format.")
     parser.add_argument("--debug", "-d", action="store_true", help="Enable debug prints.")
     parser.add_argument('--about', action=AboutAction, help='Show copyright and license info')
+    parser.add_argument("--cc_rotation", type=str, help="Path to the 4x4 transformation matrix from Cloud Compare")
 
     # Other flags
     parser.add_argument("--rgb", action="store_true", help="Add RGB values to the output file based on f_dc values (only applicable when converting to Cloud Compare format).")

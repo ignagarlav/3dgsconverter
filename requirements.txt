@@ -2,3 +2,4 @@ scikit-learn
 plyfile
 pandas
 pyarrow
+scipy
