@@ -38,6 +38,7 @@ def main():
     parser.add_argument("--bbox", nargs=6, type=float, metavar=('minX', 'minY', 'minZ', 'maxX', 'maxY', 'maxZ'), help="Specify the 3D bounding box to crop the point cloud.")
     parser.add_argument("--density_filter", nargs='*', action=DensityFilterAction, help="Filter the points to keep only regions with higher point density. Optionally provide 'voxel_size' and 'threshold_percentage' as two numbers (e.g., --density_filter 0.5 0.25). If no numbers are provided, defaults of 1.0 and 0.32 are used.")
     parser.add_argument("--remove_flyers", nargs='*', action=RemoveFlyersAction, help="Remove flyers based on k-nearest neighbors. Requires two numbers: 'k' (number of neighbors) and 'threshold_factor'.")
+    parser.add_argument("--cc_rotation", type=str, help="Path to the 4x4 transformation matrix from Cloud Compare")
     
     args = parser.parse_args()
     
@@ -111,7 +112,7 @@ def main():
                 data_to_convert = data['vertex'].data
             
             # Call the convert function and pass the data to convert
-            converted_data = convert(data_to_convert, source_format, args.target_format, process_rgb=args.rgb, density_filter=args.density_filter, remove_flyers=args.remove_flyers, bbox=bbox_values, pool=pool)
+            converted_data = convert(data_to_convert, source_format, args.target_format, process_rgb=args.rgb, density_filter=args.density_filter, remove_flyers=args.remove_flyers, bbox=bbox_values, pool=pool, cc_rotation=args.cc_rotation)
             
     except KeyboardInterrupt:
         print("Caught KeyboardInterrupt, terminating workers")

@@ -11,14 +11,59 @@ from .base_converter import BaseConverter
 from .utility import Utility
 from .utility_functions import debug_print
 from . import config
+from scipy.spatial.transform import Rotation as R
 
 class FormatCC(BaseConverter):
-    def to_3dgs(self):
+    def to_3dgs(self, cc_rotation=None):
         debug_print("[DEBUG] Starting conversion from CC to 3DGS...")
 
         # Load vertices from the updated data after all filters
         vertices = self.data
         debug_print(f"[DEBUG] Loaded {len(vertices)} vertices.")
+
+        if cc_rotation:
+            try:
+                #The matrix is read from the file as a flat list of 16 values and reshaped to a 4x4 matrix.
+                transform_mat = np.loadtxt(cc_rotation).reshape((4, 4))
+                debug_print(f"[DEBUG] Loaded transformation matrix from {cc_rotation}:\n{transform_mat}")
+
+                # The rotation part of the matrix (the top-left 3x3 submatrix) is extracted.
+                # This rotation matrix is then converted to a scipy.spatial.transform.Rotation object.
+                rotation = R.from_matrix(transform_mat[:3, :3])
+
+                # The inverse of the rotation is computed.
+                # This is because we need to transform the gaussians from the world frame to the camera frame.
+                inv_rotation = rotation.inv()
+
+                # The inverse rotation is applied to the x, y, and z coordinates of the vertices.
+                vertices_xyz = np.vstack([vertices['x'], vertices['y'], vertices['z']]).T
+                vertices_xyz_rotated = inv_rotation.apply(vertices_xyz)
+
+                # The rotated coordinates are assigned back to the vertices.
+                vertices['x'] = vertices_xyz_rotated[:, 0]
+                vertices['y'] = vertices_xyz_rotated[:, 1]
+                vertices['z'] = vertices_xyz_rotated[:, 2]
+
+                # The original rotations of the gaussians are extracted as quaternions.
+                quaternions = np.vstack([vertices['rot_0'], vertices['rot_1'], vertices['rot_2'], vertices['rot_3']]).T
+
+                # These quaternions are converted to scipy.spatial.transform.Rotation objects.
+                orig_rotations = R.from_quat(quaternions)
+
+                # The inverse rotation is applied to the original rotations.
+                rotated_rotations = inv_rotation * orig_rotations
+
+                # The resulting quaternions are extracted and assigned back to the vertices.
+                rotated_quats = rotated_rotations.as_quat()
+                vertices['rot_0'] = rotated_quats[:, 0]
+                vertices['rot_1'] = rotated_quats[:, 1]
+                vertices['rot_2'] = rotated_quats[:, 2]
+                vertices['rot_3'] = rotated_quats[:, 3]
+
+                debug_print("[DEBUG] Applied rotation to vertices and rotations.")
+
+            except Exception as e:
+                debug_print(f"[ERROR] Failed to apply rotation: {e}")
 
         # Create a new structured numpy array for 3DGS format
         dtype_3dgs = self.define_dtype(has_scal=False, has_rgb=False)  # Define 3DGS dtype without any prefix

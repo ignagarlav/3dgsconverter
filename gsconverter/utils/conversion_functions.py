@@ -43,7 +43,7 @@ def convert(data, source_format, target_format, **kwargs):
         return converter.to_cc(process_rgb=process_rgb_flag)
     elif source_format == "cc" and target_format == "3dgs":
         debug_print("[DEBUG] Converting CC to 3DGS...")
-        return converter.to_3dgs()
+        return converter.to_3dgs(cc_rotation=kwargs.get("cc_rotation"))
     elif source_format == "parquet" and target_format == "cc":
         debug_print("[DEBUG] Converting Parquet to CC...")
         return converter.to_cc(process_rgb=process_rgb_flag)
