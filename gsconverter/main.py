@@ -112,8 +112,9 @@ def main():
                 data_to_convert = data['vertex'].data
             
             # Call the convert function and pass the data to convert
-            converted_data = convert(data_to_convert, source_format, args.target_format, process_rgb=args.rgb, density_filter=args.density_filter, remove_flyers=args.remove_flyers, bbox=bbox_values, pool=pool)
-            
+            # converted_data = convert(data_to_convert, source_format, args.target_format, process_rgb=args.rgb, density_filter=args.density_filter, remove_flyers=args.remove_flyers, bbox=bbox_values, pool=pool)
+            #
+            converted_data = convert(data_to_convert, source_format, args.target_format, process_rgb=args.rgb, density_filter=args.density_filter, remove_flyers=args.remove_flyers, bbox=bbox_values, pool=pool, cc_rotation=args.cc_rotation)
     except KeyboardInterrupt:
         print("Caught KeyboardInterrupt, terminating workers")
         pool.terminate()
